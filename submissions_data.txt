@@ -1,0 +1,186 @@
+{
+    "submission": [
+        {
+            "title": "Making A Large Island",
+            "titleSlug": "making-a-large-island",
+            "timestamp": "1731494815",
+            "statusDisplay": "Accepted",
+            "lang": "cpp"
+        },
+        {
+            "title": "Subarray Sums Divisible by K",
+            "titleSlug": "subarray-sums-divisible-by-k",
+            "timestamp": "1731493959",
+            "statusDisplay": "Accepted",
+            "lang": "cpp"
+        },
+        {
+            "title": "Swim in Rising Water",
+            "titleSlug": "swim-in-rising-water",
+            "timestamp": "1731492487",
+            "statusDisplay": "Accepted",
+            "lang": "cpp"
+        },
+        {
+            "title": "Count Number of Nice Subarrays",
+            "titleSlug": "count-number-of-nice-subarrays",
+            "timestamp": "1731469278",
+            "statusDisplay": "Accepted",
+            "lang": "cpp"
+        },
+        {
+            "title": "Minimum Size Subarray Sum",
+            "titleSlug": "minimum-size-subarray-sum",
+            "timestamp": "1731468445",
+            "statusDisplay": "Accepted",
+            "lang": "cpp"
+        },
+        {
+            "title": "Shortest Subarray with Sum at Least K",
+            "titleSlug": "shortest-subarray-with-sum-at-least-k",
+            "timestamp": "1731468063",
+            "statusDisplay": "Accepted",
+            "lang": "cpp"
+        },
+        {
+            "title": "Course Schedule III",
+            "titleSlug": "course-schedule-iii",
+            "timestamp": "1731406004",
+            "statusDisplay": "Accepted",
+            "lang": "cpp"
+        },
+        {
+            "title": "IPO",
+            "titleSlug": "ipo",
+            "timestamp": "1731400540",
+            "statusDisplay": "Accepted",
+            "lang": "cpp"
+        },
+        {
+            "title": "Sliding Window Median",
+            "titleSlug": "sliding-window-median",
+            "timestamp": "1731396643",
+            "statusDisplay": "Accepted",
+            "lang": "cpp"
+        },
+        {
+            "title": "Trapping Rain Water II",
+            "titleSlug": "trapping-rain-water-ii",
+            "timestamp": "1731384415",
+            "statusDisplay": "Accepted",
+            "lang": "cpp"
+        },
+        {
+            "title": "Trapping Rain Water",
+            "titleSlug": "trapping-rain-water",
+            "timestamp": "1731382188",
+            "statusDisplay": "Accepted",
+            "lang": "cpp"
+        },
+        {
+            "title": "Subarray Sums Divisible by K",
+            "titleSlug": "subarray-sums-divisible-by-k",
+            "timestamp": "1731322823",
+            "statusDisplay": "Accepted",
+            "lang": "cpp"
+        },
+        {
+            "title": "Sliding Window Maximum",
+            "titleSlug": "sliding-window-maximum",
+            "timestamp": "1731299007",
+            "statusDisplay": "Accepted",
+            "lang": "cpp"
+        },
+        {
+            "title": "Find Median from Data Stream",
+            "titleSlug": "find-median-from-data-stream",
+            "timestamp": "1731254191",
+            "statusDisplay": "Accepted",
+            "lang": "cpp"
+        },
+        {
+            "title": "Number of Increasing Paths in a Grid",
+            "titleSlug": "number-of-increasing-paths-in-a-grid",
+            "timestamp": "1731207180",
+            "statusDisplay": "Accepted",
+            "lang": "cpp"
+        },
+        {
+            "title": "Find Median from Data Stream",
+            "titleSlug": "find-median-from-data-stream",
+            "timestamp": "1731056083",
+            "statusDisplay": "Accepted",
+            "lang": "cpp"
+        },
+        {
+            "title": "Cracking the Safe",
+            "titleSlug": "cracking-the-safe",
+            "timestamp": "1731052118",
+            "statusDisplay": "Accepted",
+            "lang": "cpp"
+        },
+        {
+            "title": "Sliding Window Maximum",
+            "titleSlug": "sliding-window-maximum",
+            "timestamp": "1730973087",
+            "statusDisplay": "Accepted",
+            "lang": "cpp"
+        },
+        {
+            "title": "Making A Large Island",
+            "titleSlug": "making-a-large-island",
+            "timestamp": "1730909894",
+            "statusDisplay": "Accepted",
+            "lang": "cpp"
+        },
+        {
+            "title": "Similar String Groups",
+            "titleSlug": "similar-string-groups",
+            "timestamp": "1730908863",
+            "statusDisplay": "Accepted",
+            "lang": "cpp"
+        },
+        {
+            "title": "Swim in Rising Water",
+            "titleSlug": "swim-in-rising-water",
+            "timestamp": "1730906440",
+            "statusDisplay": "Accepted",
+            "lang": "cpp"
+        },
+        {
+            "title": "Cracking the Safe",
+            "titleSlug": "cracking-the-safe",
+            "timestamp": "1730903579",
+            "statusDisplay": "Accepted",
+            "lang": "cpp"
+        },
+        {
+            "title": "Similar String Groups",
+            "titleSlug": "similar-string-groups",
+            "timestamp": "1730739541",
+            "statusDisplay": "Accepted",
+            "lang": "cpp"
+        },
+        {
+            "title": "Making A Large Island",
+            "titleSlug": "making-a-large-island",
+            "timestamp": "1730730547",
+            "statusDisplay": "Accepted",
+            "lang": "cpp"
+        },
+        {
+            "title": "Swim in Rising Water",
+            "titleSlug": "swim-in-rising-water",
+            "timestamp": "1730435676",
+            "statusDisplay": "Accepted",
+            "lang": "cpp"
+        },
+        {
+            "title": "Cracking the Safe",
+            "titleSlug": "cracking-the-safe",
+            "timestamp": "1730432206",
+            "statusDisplay": "Accepted",
+            "lang": "cpp"
+        }
+    ]
+}
