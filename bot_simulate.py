@@ -2,6 +2,19 @@ import sqlite3
 import json
 from datetime import datetime, timedelta
 
+def create_table_if_not_exists(cursor):
+    """Creates the completed_problems table if it doesn't already exist."""
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS completed_problems (
+            id INTEGER PRIMARY KEY,
+            title TEXT UNIQUE,
+            accepted_date TEXT,
+            review_next TEXT,
+            review_latest TEXT,
+            review_times INTEGER
+        )
+    ''')
+
 def clear_database(cursor):
     """Clears all data from the completed_problems table."""
     cursor.execute('DELETE FROM completed_problems')
@@ -80,6 +93,7 @@ def process_file(input_file):
     conn = sqlite3.connect('submissions.db')
     cursor = conn.cursor()
 
+    create_table_if_not_exists(cursor)
     # clear_database(cursor)
     
     for submission in submissions:
