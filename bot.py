@@ -178,46 +178,49 @@ class MyClient(discord.Client):
         print(f'Logged in as {self.user} (ID: {self.user.id})')
         print('------')
 
-    @tasks.loop(seconds=60)
+    @tasks.loop(minutes=1)
     async def my_background_task(self):
         await self.wait_until_ready()
-        channel = self.get_channel(CHANNEL_ID)  # channel ID goes here
+        now = datetime.now()
+        # Check if it's exactly 9 AM or 9 PM
+        if now.hour in {9, 21} and now.minute == 0:
+            channel = self.get_channel(CHANNEL_ID)  # channel ID goes here
 
-        submissions = fetch_submissions()
-        conn = sqlite3.connect('submissions.db')
-        cursor = conn.cursor()
+            submissions = fetch_submissions()
+            conn = sqlite3.connect('submissions.db')
+            cursor = conn.cursor()
 
-        create_table_if_not_exists(cursor)
-        # clear_database(cursor)
+            create_table_if_not_exists(cursor)
+            # clear_database(cursor)
 
-        for submission in submissions:
-            print(f"Processing submission: {submission['title']}")
-            process_submission(cursor, submission)
+            for submission in submissions:
+                print(f"Processing submission: {submission['title']}")
+                process_submission(cursor, submission)
 
-        today = datetime.now().strftime('%Y-%m-%d')
-        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        new_problems = []
-        to_review_problems = []
-        reviewed_problems = []
+            today = datetime.now().strftime('%Y-%m-%d')
+            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            new_problems = []
+            to_review_problems = []
+            reviewed_problems = []
 
-        # Fetching problems in separate queries
-        cursor.execute('SELECT title FROM completed_problems WHERE accepted_date = ?', (today,))
-        new_problems = [f"{row[0]}: {get_problem_link(convert_to_slug(row[0]))}" for row in cursor.fetchall()]
+            # Fetching problems in separate queries
+            cursor.execute('SELECT title FROM completed_problems WHERE accepted_date = ?', (today,))
+            new_problems = [f"{row[0]}: {get_problem_link(convert_to_slug(row[0]))}" for row in cursor.fetchall()]
 
-        cursor.execute('SELECT title FROM completed_problems WHERE review_next <= ? AND review_latest != ?', (today, today))
-        to_review_problems = [f"{row[0]}: {get_problem_link(convert_to_slug(row[0]))}" for row in cursor.fetchall()]
+            cursor.execute('SELECT title FROM completed_problems WHERE review_next <= ? AND review_latest != ?', (today, today))
+            to_review_problems = [f"{row[0]}: {get_problem_link(convert_to_slug(row[0]))}" for row in cursor.fetchall()]
 
-        cursor.execute('SELECT title FROM completed_problems WHERE review_latest = ? AND accepted_date != ?', (today, today))
-        reviewed_problems = [f"{row[0]}: {get_problem_link(convert_to_slug(row[0]))}" for row in cursor.fetchall()]
+            cursor.execute('SELECT title FROM completed_problems WHERE review_latest = ? AND accepted_date != ?', (today, today))
+            reviewed_problems = [f"{row[0]}: {get_problem_link(convert_to_slug(row[0]))}" for row in cursor.fetchall()]
 
-        # Constructing the message to send
-        message = f"Today's Summary ({current_time})\n"
-        message += f"Completed {len(new_problems)} New Problem(s):\n" + "\n".join(new_problems) + "\n"
-        message += f"{len(to_review_problems)} Problem(s) to Review:\n" + "\n".join(to_review_problems) + "\n"
-        message += f"{len(reviewed_problems)} Reviewed Problems:\n" + "\n".join(reviewed_problems)
+            # Constructing the message to send
+            message = f"Today's Summary ({current_time})\n"
+            message += f"Completed {len(new_problems)} New Problem(s):\n" + "\n".join(new_problems) + "\n"
+            message += f"{len(to_review_problems)} Problem(s) to Review:\n" + "\n".join(to_review_problems) + "\n"
+            message += f"{len(reviewed_problems)} Reviewed Problems:\n" + "\n".join(reviewed_problems)
 
-        # Sending the message to the channel
-        await channel.send(message)
+            # Sending the message to the channel
+            await channel.send(message)
 
 
 client = MyClient(intents=discord.Intents.default())
