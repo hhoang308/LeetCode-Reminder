@@ -6,36 +6,29 @@ import sqlite3
 from discord.ext import tasks
 from datetime import datetime, timedelta
 import re
+import datetime
+
+gmt_plus_7 = datetime.timezone(datetime.timedelta(hours=7))
+
+times = [
+    datetime.time(hour=9, tzinfo=gmt_plus_7),  # 9:00 sáng GMT+7
+    datetime.time(hour=21, tzinfo=gmt_plus_7) # 9:00 tối GMT+7
+]
 
 load_dotenv()
 
 BOT_TOKEN = os.getenv('BOT_TOKEN')
-CHANNEL_ID = int(os.getenv("CHANNEL_ID"))
+CHANNEL_ID = int(os.getenv('CHANNEL_ID'))
 ACCOUNT_USER = os.getenv('ACCOUNT_USER')
-
-def create_table_if_not_exists(cursor):
-    """Creates the completed_problems table if it doesn't already exist."""
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS completed_problems (
-            id INTEGER PRIMARY KEY,
-            title TEXT UNIQUE,
-            accepted_date TEXT,
-            review_next TEXT,
-            review_latest TEXT,
-            review_times INTEGER
-        )
-    ''')
-
-def clear_database(cursor):
-    """Clears all data from the completed_problems table."""
-    cursor.execute('DELETE FROM completed_problems')
-    print("Database cleared.")
 
 def convert_to_slug(title):
     title_slug = title.lower()
     title_slug = re.sub(r'[^a-z0-9\s-]', '', title_slug)  
     title_slug = re.sub(r'\s+', '-', title_slug) 
     return title_slug
+
+def get_problem_link(title_slug):
+    return f"https://leetcode.com/problems/{title_slug}"
 
 def fetch_submissions():
     url = f"https://alfa-leetcode-api.onrender.com/{ACCOUNT_USER}/acSubmission"
@@ -115,38 +108,34 @@ class MyClient(discord.Client):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        # an attribute we can access from our task
+        self.counter = 0
+
     async def setup_hook(self) -> None:
-        # create the background task and run it in the background
-        self.bg_task = self.loop.create_task(self.my_background_task())
+        # start the task to run in the background
+        self.my_background_task.start()
 
     async def on_ready(self):
         print(f'Logged in as {self.user} (ID: {self.user.id})')
         print('------')
 
-    @tasks.loop(minutes=1)
+    @tasks.loop(time=times)  # task runs every 60 seconds
     async def my_background_task(self):
-        await self.wait_until_ready()
-        # Check if it's exactly 9 AM or 9 PM
+
         channel = self.get_channel(CHANNEL_ID)  # channel ID goes here
         submissions = fetch_submissions()
         if submissions:
             conn = sqlite3.connect('submissions.db')
             cursor = conn.cursor()
 
-            create_table_if_not_exists(cursor)
-            # clear_database(cursor)
-
             for submission in submissions:
                 print(f"Processing submission: {submission['title']}")
                 process_submission(cursor, submission)
+                conn.commit()
 
             today = datetime.now().strftime('%Y-%m-%d')
             current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            new_problems = []
-            to_review_problems = []
-            reviewed_problems = []
 
-            # Fetching problems in separate queries
             cursor.execute('SELECT title FROM completed_problems WHERE accepted_date = ?', (today,))
             new_problems = [f"{row[0]}: {get_problem_link(convert_to_slug(row[0]))}" for row in cursor.fetchall()]
 
@@ -156,17 +145,18 @@ class MyClient(discord.Client):
             cursor.execute('SELECT title FROM completed_problems WHERE review_latest = ? AND accepted_date != ?', (today, today))
             reviewed_problems = [f"{row[0]}: {get_problem_link(convert_to_slug(row[0]))}" for row in cursor.fetchall()]
 
-            # Constructing the message to send
             message = f"Today's Summary ({current_time})\n"
             message += f"Completed {len(new_problems)} New Problem(s):\n" + "\n".join(new_problems) + "\n"
             message += f"{len(to_review_problems)} Problem(s) to Review:\n" + "\n".join(to_review_problems) + "\n"
             message += f"{len(reviewed_problems)} Reviewed Problems:\n" + "\n".join(reviewed_problems)
             print(message)
+            await channel.send(message)
         else:
             print("Can't fetch submission, no update!")
-            message = "Can't fetch submission, no update!"
-        # Sending the message to the channel
-        await channel.send(message)
+
+    @my_background_task.before_loop
+    async def before_my_task(self):
+        await self.wait_until_ready()  # wait until the bot logs in
 
 
 client = MyClient(intents=discord.Intents.default())
