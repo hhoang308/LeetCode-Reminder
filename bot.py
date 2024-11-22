@@ -6,13 +6,13 @@ import sqlite3
 from discord.ext import tasks
 from datetime import datetime, timedelta
 import re
-import datetime
+from datetime import datetime, timezone, timedelta, time
 
-gmt_plus_7 = datetime.timezone(datetime.timedelta(hours=7))
+gmt_plus_7 = timezone(timedelta(hours=7))
 
 times = [
-    datetime.time(hour=9, tzinfo=gmt_plus_7),  # 9:00 sáng GMT+7
-    datetime.time(hour=21, tzinfo=gmt_plus_7) # 9:00 tối GMT+7
+    time(hour=0, minute=5, tzinfo=gmt_plus_7),  # 9:00 sáng GMT+7
+    time(hour=23, minute=59, tzinfo=gmt_plus_7) # 9:00 tối GMT+7
 ]
 
 load_dotenv()
@@ -45,9 +45,6 @@ def fetch_submissions():
         # Handle network-related errors (like connection issues)
         print("Request failed:", e)
     return []  # Return an empty list if there's an error
-
-def get_problem_link(title_slug):
-    return f"https://leetcode.com/problems/{title_slug}"
 
 def update_accepted_date(cursor, title, current_accepted_date, new_accepted_date):
     print(f"Updating accepted_date for {title} from {current_accepted_date} to {new_accepted_date}")
@@ -119,7 +116,7 @@ class MyClient(discord.Client):
         print(f'Logged in as {self.user} (ID: {self.user.id})')
         print('------')
 
-    @tasks.loop(time=times)  # task runs every 60 seconds
+    @tasks.loop(minutes=20)  # task runs every 60 seconds
     async def my_background_task(self):
 
         channel = self.get_channel(CHANNEL_ID)  # channel ID goes here
@@ -150,7 +147,16 @@ class MyClient(discord.Client):
             message += f"{len(to_review_problems)} Problem(s) to Review:\n" + "\n".join(to_review_problems) + "\n"
             message += f"{len(reviewed_problems)} Reviewed Problems:\n" + "\n".join(reviewed_problems)
             print(message)
-            await channel.send(message)
+            conn.close()
+            MAX_MESSAGE_LENGTH = 2000
+            while len(message) > MAX_MESSAGE_LENGTH:
+                part = message[:MAX_MESSAGE_LENGTH]
+                await channel.send(part)
+                message = message[MAX_MESSAGE_LENGTH:]
+
+            # Gửi phần còn lại
+            if message:
+                await channel.send(message)
         else:
             print("Can't fetch submission, no update!")
 
