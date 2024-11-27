@@ -1,25 +1,24 @@
-import discord
 import os
 from dotenv import load_dotenv
-import requests
+import discord
+from discord.ext import commands
 import sqlite3
-from discord.ext import tasks
 from datetime import datetime, timedelta
 import re
-from datetime import datetime, timezone, timedelta, time
+import requests
 
-gmt_plus_7 = timezone(timedelta(hours=7))
-
-times = [
-    time(hour=0, minute=5, tzinfo=gmt_plus_7),  # 9:00 sáng GMT+7
-    time(hour=23, minute=59, tzinfo=gmt_plus_7) # 9:00 tối GMT+7
-]
 
 load_dotenv()
-
-BOT_TOKEN = os.getenv('BOT_TOKEN')
+TOKEN = os.getenv('BOT_TOKEN')
 CHANNEL_ID = int(os.getenv('CHANNEL_ID'))
 ACCOUNT_USER = os.getenv('ACCOUNT_USER')
+
+
+intents = discord.Intents.default()  
+intents.message_content = True  
+
+
+bot = commands.Bot(command_prefix='!', intents=intents)
 
 def convert_to_slug(title):
     title_slug = title.lower()
@@ -32,7 +31,7 @@ def get_problem_link(title_slug):
 
 def fetch_submissions():
     url = f"https://alfa-leetcode-api.onrender.com/{ACCOUNT_USER}/acSubmission"
-    print("fetch from ", url)
+    print("Fetch data from API", url)
     try:
         response = requests.get(url)
         if response.status_code == 200:
@@ -101,69 +100,50 @@ def process_submission(cursor, submission):
                        (title, accepted_date, review_next, review_latest, review_times))
         print(f"Inserted a new problem: {title} | accepted_date: {accepted_date} | review_next: {review_next}")
 
-class MyClient(discord.Client):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+@bot.event
+async def on_ready():
+    print(f'{bot.user.name} has connected to Discord!')
 
-        # an attribute we can access from our task
-        self.counter = 0
+@bot.command(name='update', help='Responds with Parkle\'s LeetCode to-do-list')
+async def update(ctx):
+    submissions = fetch_submissions()
+    if submissions:
+        conn = sqlite3.connect('submissions.db')
+        cursor = conn.cursor()
 
-    async def setup_hook(self) -> None:
-        # start the task to run in the background
-        self.my_background_task.start()
+        for submission in submissions:
+            print(f"Processing submission: {submission['title']}")
+            process_submission(cursor, submission)
+            conn.commit()
 
-    async def on_ready(self):
-        print(f'Logged in as {self.user} (ID: {self.user.id})')
-        print('------')
+        today = datetime.now().strftime('%Y-%m-%d')
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M")
 
-    @tasks.loop(minutes=20)  # task runs every 60 seconds
-    async def my_background_task(self):
+        cursor.execute('SELECT title FROM completed_problems WHERE accepted_date = ?', (today,))
+        new_problems = [f"{row[0]}: {get_problem_link(convert_to_slug(row[0]))}" for row in cursor.fetchall()]
 
-        channel = self.get_channel(CHANNEL_ID)  # channel ID goes here
-        submissions = fetch_submissions()
-        if submissions:
-            conn = sqlite3.connect('submissions.db')
-            cursor = conn.cursor()
+        cursor.execute('SELECT title FROM completed_problems WHERE review_next <= ? AND review_latest != ?', (today, today))
+        to_review_problems = [f"{get_problem_link(convert_to_slug(row[0]))}" for row in cursor.fetchall()]
 
-            for submission in submissions:
-                print(f"Processing submission: {submission['title']}")
-                process_submission(cursor, submission)
-                conn.commit()
+        cursor.execute('SELECT title FROM completed_problems WHERE review_latest = ? AND accepted_date != ?', (today, today))
+        reviewed_problems = [f"{row[0]}" for row in cursor.fetchall()]
 
-            today = datetime.now().strftime('%Y-%m-%d')
-            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        message = f"\(￣︶￣*\)\nToday's Summary ({current_time})\n"
+        message += f"Completed {len(new_problems)} New Problem(s):\n" + "\n".join(new_problems) + "\n"
+        message += f"{len(to_review_problems)} Problem(s) to Review:\n" + "\n".join(to_review_problems) + "\n"
+        message += f"{len(reviewed_problems)} Reviewed Problems:\n" + "\n".join(reviewed_problems)
+        print(message)
+        conn.close()
+        MAX_MESSAGE_LENGTH = 2000
+        while len(message) > MAX_MESSAGE_LENGTH:
+            part = message[:MAX_MESSAGE_LENGTH]
+            await ctx.send(part)
+            message = message[MAX_MESSAGE_LENGTH:]
 
-            cursor.execute('SELECT title FROM completed_problems WHERE accepted_date = ?', (today,))
-            new_problems = [f"{row[0]}: {get_problem_link(convert_to_slug(row[0]))}" for row in cursor.fetchall()]
+        if message:
+            await ctx.send(message)
+    else:
+        print("Can't fetch submission, no update!")
+        await ctx.send("You have just requested, please wait a few more minute 👌!")
 
-            cursor.execute('SELECT title FROM completed_problems WHERE review_next <= ? AND review_latest != ?', (today, today))
-            to_review_problems = [f"{row[0]}: {get_problem_link(convert_to_slug(row[0]))}" for row in cursor.fetchall()]
-
-            cursor.execute('SELECT title FROM completed_problems WHERE review_latest = ? AND accepted_date != ?', (today, today))
-            reviewed_problems = [f"{row[0]}: {get_problem_link(convert_to_slug(row[0]))}" for row in cursor.fetchall()]
-
-            message = f"Today's Summary ({current_time})\n"
-            message += f"Completed {len(new_problems)} New Problem(s):\n" + "\n".join(new_problems) + "\n"
-            message += f"{len(to_review_problems)} Problem(s) to Review:\n" + "\n".join(to_review_problems) + "\n"
-            message += f"{len(reviewed_problems)} Reviewed Problems:\n" + "\n".join(reviewed_problems)
-            print(message)
-            conn.close()
-            MAX_MESSAGE_LENGTH = 2000
-            while len(message) > MAX_MESSAGE_LENGTH:
-                part = message[:MAX_MESSAGE_LENGTH]
-                await channel.send(part)
-                message = message[MAX_MESSAGE_LENGTH:]
-
-            # Gửi phần còn lại
-            if message:
-                await channel.send(message)
-        else:
-            print("Can't fetch submission, no update!")
-
-    @my_background_task.before_loop
-    async def before_my_task(self):
-        await self.wait_until_ready()  # wait until the bot logs in
-
-
-client = MyClient(intents=discord.Intents.default())
-client.run(BOT_TOKEN)
+bot.run(TOKEN)
