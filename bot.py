@@ -10,7 +10,6 @@ import requests
 
 load_dotenv()
 TOKEN = os.getenv('BOT_TOKEN')
-CHANNEL_ID = int(os.getenv('CHANNEL_ID'))
 ACCOUNT_USER = os.getenv('ACCOUNT_USER')
 
 
