@@ -5,13 +5,15 @@ I used [this API](https://github.com/alfaarghya/alfa-leetcode-api) to get 20 lat
 # How to use this 
 I recommend you to use a virtual machine for convenience, I'm using google cloud now.
 ### Step 1: Install Python
+python --version
 ### Step 2: Install requirement.txt
+sudo apt install python3-pip
+pip3 install -r requirements.txt
 ### Step 3: Log in to Discord Developer Portal
-### Step 4: Copy Channel ID
-### Step 5: Create .env
+### Step 4: Create .env
 ```
 BOT_TOKEN=
 ACCOUNT_USER=
-CHANNEL_ID=
 ```
-### Step 6: Run it as a service
+### Step 5: Run it as a service
+### Step 6: Change time zone (optional)
