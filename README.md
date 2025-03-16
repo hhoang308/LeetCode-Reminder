@@ -1,3 +1,5 @@
+# Result
+![image](https://github.com/user-attachments/assets/574f6441-bffc-4e8e-a1c7-6f977e1663b7)
 # Purpose
 This bot is created to remind you to revise the exercises you have done on leetcode after a period of time.
 # How it works
@@ -12,6 +14,9 @@ sudo apt install python3-pip
 pip3 install -r requirements.txt
 ### Step 3: Log in to Discord Developer Portal
 ### Step 4: Create .env
+ACCOUNT_USER in here is huyhoang3082001
+![image](https://github.com/user-attachments/assets/e80aeaf1-18f2-4f65-b8bc-27be9c8153d3)
+BOT_TOKEN will get from Discord Developer Portal -> Bot -> Token (you can click Reset Token)
 ```
 BOT_TOKEN=
 ACCOUNT_USER=
